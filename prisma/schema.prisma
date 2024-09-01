@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Billing {
+  id              String            @id @unique @default(cuid())
+  title           String
+  amount          Decimal
+  recurrent       Boolean           @default(false)
+  installments    Int?
+  billingPayments BillingPayments[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime?         @updatedAt
+}
+
+model BillingPayments {
+  id        String    @id @unique @default(cuid())
+  billing   Billing   @relation(fields: [billingId], references: [id], onDelete: Cascade)
+  billingId String
+  amount    Decimal
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Transactions {
+  id         String     @id @unique @default(cuid())
+  title      String
+  category   Categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime?  @updatedAt
+}
+
+model Categories {
+  id           String         @id @unique @default(cuid())
+  title        String
+  transactions Transactions[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime?      @updatedAt
+}
