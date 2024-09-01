@@ -9,32 +9,53 @@ datasource db {
 }
 
 model Billing {
-  id              String            @id @unique @default(cuid())
-  title           String
-  amount          Decimal
-  recurrent       Boolean           @default(false)
-  installments    Int?
-  billingPayments BillingPayments[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime?         @updatedAt
+  id                String                @id @unique @default(cuid())
+  title             String
+  amount            Decimal
+  recurrent         Boolean               @default(false)
+  installmentsTotal Int
+  installments      BillingInstallments[]
+  payments          BillingPayments[]
+  dueStart          DateTime
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime?             @updatedAt
+}
+
+model BillingInstallments {
+  id          String            @id @unique @default(cuid())
+  Billing     Billing?          @relation(fields: [billingId], references: [id])
+  billingId   String?
+  installment Int
+  amount      Decimal
+  dueDate     DateTime
+  paid        Boolean           @default(false)
+  payment     BillingPayments[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime?         @updatedAt
 }
 
 model BillingPayments {
-  id        String    @id @unique @default(cuid())
-  billing   Billing   @relation(fields: [billingId], references: [id], onDelete: Cascade)
-  billingId String
-  amount    Decimal
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  id            String               @id @unique @default(cuid())
+  billing       Billing              @relation(fields: [billingId], references: [id], onDelete: Cascade)
+  billingId     String
+  amount        Decimal
+  installment   BillingInstallments? @relation(fields: [installmentId], references: [id])
+  installmentId String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime?            @updatedAt
 }
 
 model Transactions {
-  id         String     @id @unique @default(cuid())
-  title      String
-  category   Categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime?  @updatedAt
+  id               String         @id @unique @default(cuid())
+  title            String
+  category         Categories     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId       String
+  paymentMethod    PaymentMethods @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
+  paymentMethodId  String
+  walletProvider   WalletProvider @relation(fields: [walletProviderId], references: [id], onDelete: Cascade)
+  walletProviderId String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime?      @updatedAt
 }
 
 model Categories {
@@ -44,3 +65,49 @@ model Categories {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime?      @updatedAt
 }
+
+model PaymentMethods {
+  id           String         @id @unique @default(cuid())
+  provider     String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime?      @updatedAt
+  Transactions Transactions[]
+}
+
+model WalletProvider {
+  id           String         @id @unique @default(cuid())
+  provider     String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime?      @updatedAt
+  wallet       Wallet[]
+  Transactions Transactions[]
+}
+
+model Wallet {
+  id               String         @id @unique @default(cuid())
+  balance          Decimal
+  walletProvider   WalletProvider @relation(fields: [walletProviderId], references: [id], onDelete: Cascade)
+  walletProviderId String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime?      @updatedAt
+}
+
+model SavingProvider {
+  id        String    @id @unique @default(cuid())
+  provider  String
+  savings   Savings[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Savings {
+  id               String         @id @unique @default(cuid())
+  balance          Decimal
+  savingProvider   SavingProvider @relation(fields: [savingProviderId], references: [id], onDelete: Cascade)
+  savingProviderId String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime?      @updatedAt
+}
+
+//model Budget {}
+//model Goals {}
