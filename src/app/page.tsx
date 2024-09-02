@@ -1,5 +1,8 @@
+import { Hero } from "@/components/site/hero"
 export default function Home() {
   return (
-    <h1>Hello World!</h1>
+    <>
+      <Hero />
+    </>
   )
 }
